@@ -1,71 +1,32 @@
-from django.shortcuts import render
-from django.http import HttpResponse, JsonResponse
-from django.views.decorators.csrf import csrf_exempt # we will handle cross-site request forgery attempts
-from rest_framework.parsers import JSONParser
+# same thing but this time using class-based views
 from snippets.models import Snippet
 from snippets.serializers import SnippetSerializer
-# import thngs from drf
-from rest_framework import status
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
+from snippets.serializers import UserSerializer
+from rest_framework import generics
+# manage authentication
+from rest_framework import permissions
 
-# Create your views here.
-# decorate the views as REST Framework API views
+from django.contrib.auth.models import User
 
-# @csrf_exempt # useful only during development
-@api_view(['GET', 'POST']) # which methods does this view support
-def snippet_list(request): # this is the http request object being passed in
-    '''
-    list all code snippets or create a new one
-    '''
-    if request.method == 'GET':
-        # list the snippets
-        snippets = Snippet.objects.all()
-        serializer = SnippetSerializer(snippets, many=True)
-        # return JsonResponse(serializer.data, safe=False)
-        return Response(serializer.data) # use the drf Response object
+# declare our class-based views
+class SnippetList(generics.ListCreateAPIView):
+    queryset = Snippet.objects.all()
+    serializer_class = SnippetSerializer
+    # we can grant permissions
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    # we need to associate snippets with a user
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
 
-    elif request.method == 'POST':
-        # create a new snippet
-        # data = JSONParser().parse(request)
-        serializer = SnippetSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            # return JsonResponse(serializer.data, status= 201)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        # return JsonResponse(serializer.errors, status=400)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+class SnippetDetail(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Snippet.objects.all()
+    serializer_class = SnippetSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
-# @csrf_exempt
-@api_view(['GET', 'PUT', 'DELETE'])
-def snippet_detail(request, pk): # pk is the key we are interested in
-    '''
-    retrieve, update or delete a code snippet
-    '''
-    try:
-        snippet = Snippet.objects.get(pk=pk)
-    except Snippet.DoesNotExist:
-        # return HttpResponse(status=404)
-        return Response(status=status.HTTP_404_NOT_FOUND)
+class UserList(generics.ListAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
 
-    # determine what action to carry out
-    if request.method == 'GET':
-        serializer = SnippetSerializer(snippet)
-        # return JsonResponse(serializer.data)
-        return Response(serializer.data)
-    elif request.method == 'PUT':
-        # data = JSONParser().parse(request)
-        serializer = SnippetSerializer(snippet, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            # return JsonResponse(serializer.data, status= 201)
-            return Response(serializer.data)
-        # return JsonResponse(serializer.errors, status=400)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    elif request.method == 'DELETE':
-        snippet.delete()
-        # return HttpResponse(status=204)
-        return Response(status=status.HTTP_204_NO_CONTENT)
-    
-
+class UserDetail(generics.RetrieveAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
