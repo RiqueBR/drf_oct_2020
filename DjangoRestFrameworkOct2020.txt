@@ -1,0 +1,49 @@
+Django Rest Framework (DRF)
+1 October 2020
+Toby Dussek
+
+django-admin startproject tutorial
+cd tutorial
+python manage.py startapp snippets
+
+...
+python manage.py makemigrations snippets
+python manage.py migrate
+
+- overview of REST and JSON
+- how DRF works with Django
+- Serialize model data
+- examples of REST
+- how we will write code together
+- starting a DRF project
+- writing models
+- writing a serializer class
+- admin
+- writing pages to see the data
+- use Serializer model
+- GET and POST and CSRF
+
+Rest Framework gives us...
+- @api_view decorator
+- APIView class
+- Response class
+
+Afternoon:
+- review where we've got to...
+
+The drf Response object now allows us to specify the format of the reponse
+- accessing models in different formats 
+- class-based views (and why we would use them)
+
+Authentication
+- adding users to our models (also serializer for users)
+- (add some users to our app)
+- delete and re-create the db so we can...
+- work with API end-points that include users
+
+End of course:
+- feedback
+- all my code available for download
+
+
+
